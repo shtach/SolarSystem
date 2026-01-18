@@ -1,0 +1,79 @@
+# ===============================
+# IDE / Editor
+# ===============================
+.vs/
+.vscode/
+.idea/
+
+# ===============================
+# Build directories
+# ===============================
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# ===============================
+# Compiled binaries
+# ===============================
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# ===============================
+# Object / intermediate files
+# ===============================
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.pdb
+*.idb
+
+# ===============================
+# Debug / runtime files
+# ===============================
+*.log
+*.tmp
+*.swp
+*.swo
+
+# ===============================
+# OS generated
+# ===============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===============================
+# CMake user presets
+# ===============================
+CMakeUserPresets.json
+
+# ===============================
+# Optional: third-party builds
+# (keep sources, ignore their builds)
+# ===============================
+GLEW/build/
+GLFW/build/
+
+# ===============================
+# Optional: cache / generated assets
+# ===============================
+.cache/
+
+
+# ===============================
+# Other
+# ===============================
+/GLEW
+/GLFW
+/glm
+/GLRW
