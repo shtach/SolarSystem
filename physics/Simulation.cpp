@@ -6,6 +6,7 @@
 
 void Simulation::initializeSolarSystem() {
     m_bodies.clear();
+    m_bodies.reserve(1100);
 
     // Sun
     Body sun(1.9885e30, Vec2(0.0, 0.0), Vec2(0.0, 0.0), 50.0f);
