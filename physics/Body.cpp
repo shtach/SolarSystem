@@ -16,11 +16,9 @@ void Body::setAtmosphere(float size, float r, float g, float b) {
 
 void Body::updateTrail(bool enabled) {
     if (enabled) {
-        // DODANE: dodawanie punktu tylko co pewien czas dla optymalizacji
-        static int trailCounter = 0;
         trailCounter++;
-        
-        if (trailCounter % 3 == 0) { // Co trzecią klatkę
+
+        if (trailCounter % 3 == 0) {
             trail.push_back(static_cast<float>(position.x));
             trail.push_back(static_cast<float>(position.y));
 

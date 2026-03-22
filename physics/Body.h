@@ -4,6 +4,7 @@
 
 class Body {
 private:
+    int trailCounter = 0;
     static constexpr int MAX_TRAIL_LENGTH = 1000; // ZWIĘKSZONE: dłuższe ślady
 
 public:
