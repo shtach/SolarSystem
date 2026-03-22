@@ -14,10 +14,9 @@ void Simulation::initializeSolarSystem() {
     sun.setAtmosphere(1.5f, 1.0f, 0.8f, 0.2f);
     m_bodies.push_back(sun);
 
-    auto addPlanet = [&](double mass, double radius, float size, float r, float g, float b, 
-                        bool hasAtmosphere = false, float atmSize = 0.0f, 
-                        float ar = 0.0f, float ag = 0.0f, float ab = 0.0f) -> Body& {
-        // POPRAWIONE: właściwa prędkość orbitalna z uwzględnieniem kierunku
+    auto addPlanet = [this, &sun](double mass, double radius, float size, float r, float g, float b,
+                                bool hasAtmosphere = false, float atmSize = 0.0f,
+                                float ar = 0.0f, float ag = 0.0f, float ab = 0.0f) -> size_t {
         double orbital_velocity = std::sqrt(m_G * sun.mass / radius);
         Body planet(mass, Vec2(radius, 0.0), Vec2(0.0, orbital_velocity), size);
         planet.color[0] = r; planet.color[1] = g; planet.color[2] = b;
@@ -25,18 +24,18 @@ void Simulation::initializeSolarSystem() {
             planet.setAtmosphere(atmSize, ar, ag, ab);
         }
         m_bodies.push_back(planet);
-        return m_bodies.back();
+        return m_bodies.size() - 1;
     };
 
     // Planety - POPRAWIONE: wszystkie planety dodawane do wektora ciał
-    Body& mercury = addPlanet(3.3011e23, 5.791e10, 8.0f, 0.6f, 0.6f, 0.6f);
-    Body& venus = addPlanet(4.8675e24, 1.082e11, 12.0f, 0.9f, 0.7f, 0.3f, true, 1.4f, 1.0f, 0.6f, 0.2f);
-    Body& earth = addPlanet(5.972e24, 1.496e11, 13.0f, 0.2f, 0.4f, 1.0f, true, 1.3f, 0.3f, 0.5f, 1.0f);
-    Body& mars = addPlanet(6.4171e23, 2.279e11, 10.0f, 0.8f, 0.3f, 0.2f, true, 1.2f, 0.8f, 0.4f, 0.3f);
-    Body& jupiter = addPlanet(1.8982e27, 7.785e11, 45.0f, 0.8f, 0.6f, 0.4f, true, 1.5f, 0.9f, 0.7f, 0.5f);
-    Body& saturn = addPlanet(5.6834e26, 1.429e12, 40.0f, 0.95f, 0.85f, 0.6f, true, 1.8f, 0.9f, 0.8f, 0.6f);
-    Body& uranus = addPlanet(8.6810e25, 2.871e12, 25.0f, 0.6f, 0.8f, 0.95f, true, 1.4f, 0.6f, 0.8f, 0.95f);
-    Body& neptune = addPlanet(1.02413e26, 4.498e12, 25.0f, 0.2f, 0.2f, 0.8f, true, 1.4f, 0.2f, 0.3f, 0.9f);
+    size_t mercury = addPlanet(3.3011e23, 5.791e10, 8.0f, 0.6f, 0.6f, 0.6f);
+    size_t venus = addPlanet(4.8675e24, 1.082e11, 12.0f, 0.9f, 0.7f, 0.3f, true, 1.4f, 1.0f, 0.6f, 0.2f);
+    size_t earth = addPlanet(5.972e24, 1.496e11, 13.0f, 0.2f, 0.4f, 1.0f, true, 1.3f, 0.3f, 0.5f, 1.0f);
+    size_t mars = addPlanet(6.4171e23, 2.279e11, 10.0f, 0.8f, 0.3f, 0.2f, true, 1.2f, 0.8f, 0.4f, 0.3f);
+    size_t jupiter = addPlanet(1.8982e27, 7.785e11, 45.0f, 0.8f, 0.6f, 0.4f, true, 1.5f, 0.9f, 0.7f, 0.5f);
+    size_t saturn = addPlanet(5.6834e26, 1.429e12, 40.0f, 0.95f, 0.85f, 0.6f, true, 1.8f, 0.9f, 0.8f, 0.6f);
+    size_t uranus = addPlanet(8.6810e25, 2.871e12, 25.0f, 0.6f, 0.8f, 0.95f, true, 1.4f, 0.6f, 0.8f, 0.95f);
+    size_t neptune = addPlanet(1.02413e26, 4.498e12, 25.0f, 0.2f, 0.2f, 0.8f, true, 1.4f, 0.2f, 0.3f, 0.9f);
 
     // DODANE: księżyce dodawane jako osobne ciała w symulacji
     addMoonsToSimulation(earth, mars, jupiter, saturn, uranus, neptune);

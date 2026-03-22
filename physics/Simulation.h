@@ -15,7 +15,7 @@ private:
     void computeGravityCPU();
     void velocityVerletStep(double dt);
     void computeGravityGPU();
-    void addMoonsToSimulation(Body& earth, Body& mars, Body& jupiter, Body& saturn, Body& uranus, Body& neptune); // NOWA METODA
+    void addMoonsToSimulation(size_t earth, size_t mars, size_t jupiter, size_t saturn, size_t uranus, size_t neptune);
     void addAsteroids(int count);
 
 public:
