@@ -1,7 +1,6 @@
 #pragma once
 #include "Body.h"
 #include <vector>
-#include <memory>
 
 class Simulation {
 private:

@@ -1,11 +1,10 @@
 #pragma once
 
-#include <glad/glad.h> 
+#include <glad/gl.h> 
 #include <GLFW/glfw3.h>
 
-#include "Simulation.h"
+#include "engine/physics/Simulation.h"
 #include "Camera.h"
-#include <memory>
 
 class Renderer {
 private:
