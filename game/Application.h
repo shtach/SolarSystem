@@ -1,9 +1,13 @@
 #pragma once
 
-#include "Renderer.h"
-#include "Simulation.h"
-#include "Camera.h"
-#include "InputHandler.h"
+#include <memory>
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
+#include "engine/graphics/Renderer.h"
+#include "engine/graphics/Camera.h"
+#include "engine/physics/Simulation.h"
+#include "engine/input/InputHandler.h"
 
 class Application {
 private:
@@ -19,7 +23,7 @@ private:
     void initializeGLFW();
     void initializeGLAD();
     void initializeSystems();
-    void processInput(double frameTime); // DODANO PARAMETR
+    void processInput(double frameTime);
     void update(double frameTime);
     void render();
 

@@ -1,9 +1,5 @@
 #include "Application.h"
 #include <iostream>
-#include <memory>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 Application::Application() {
     initializeGLFW();
@@ -33,7 +29,7 @@ void Application::initializeGLFW() {
 }
 
 void Application::initializeGLAD() {
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         throw std::runtime_error("GLAD initialization failed");
     }
 }
@@ -54,19 +50,16 @@ void Application::initializeSystems() {
 void Application::processInput(double frameTime) {
     m_inputHandler->processInput(m_paused);
 
-    // Camera movement
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) m_camera->move(0, 1, frameTime);
     if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) m_camera->move(0, -1, frameTime);
     if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) m_camera->move(-1, 0, frameTime);
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) m_camera->move(1, 0, frameTime);
     
-    // Reset view
     if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS) {
         m_camera->viewWholeSystem();
         glfwWaitEventsTimeout(0.1);
     }
 
-    // Kontrola prędkości symulacji - ROZSZERZONE
     if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
         double speed = m_simulation->getSimulationSpeed();
         m_simulation->setSimulationSpeed(std::min(speed * 2.0, 10000.0));
@@ -80,7 +73,6 @@ void Application::processInput(double frameTime) {
         glfwWaitEventsTimeout(0.1);
     }
     
-    // Reset prędkości do normalnej
     if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS) {
         m_simulation->setSimulationSpeed(1.0);
         std::cout << "Simulation speed: 1x" << std::endl;
@@ -113,11 +105,9 @@ void Application::run() {
     std::cout << "1 - reset to normal speed\n";
     std::cout << "\nCurrent simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
 
-    // DODANE: szczegółowe informacje debugowe
     std::cout << "Body count: " << m_simulation->getBodyCount() << std::endl;
     std::cout << "Initial camera scale: " << m_camera->getScale() << std::endl;
     
-    // DODANE: informacje o planetach
     const auto& bodies = m_simulation->getBodies();
     if (bodies.size() > 1) {
         std::cout << "First planet position: " << bodies[1].position.x << ", " << bodies[1].position.y << std::endl;

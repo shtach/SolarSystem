@@ -1,9 +1,10 @@
 #pragma once
-#include "Vec2.h"
+#include "engine/core/Vec2.h"
 #include <vector>
 
 class Body {
 private:
+    int trailCounter = 0;
     static constexpr int MAX_TRAIL_LENGTH = 1000; // ZWIĘKSZONE: dłuższe ślady
 
 public:
