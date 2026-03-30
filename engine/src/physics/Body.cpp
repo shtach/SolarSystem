@@ -1,4 +1,4 @@
-#include "Body.h"
+#include "engine/physics/Body.h"
 
 Body::Body(double mass, const Vec2& position, const Vec2& velocity, float bodySize)
     : mass(mass), position(position), velocity(velocity), size(bodySize),

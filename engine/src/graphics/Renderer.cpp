@@ -1,8 +1,7 @@
-#include "Renderer.h"
+#include "engine/graphics/Renderer.h"
 #include <iostream>
 #include <vector>
 #include <string>
-#include <sstream>
 
 // Shader sources
 const char* vs_points = R"(

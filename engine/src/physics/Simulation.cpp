@@ -1,8 +1,7 @@
-#include "Simulation.h"
+#include "engine/physics/Simulation.h"
 #include <random>
 #include <cmath>
-#include <iostream>
-#include <algorithm>
+
 
 void Simulation::initializeSolarSystem() {
     m_bodies.clear();
