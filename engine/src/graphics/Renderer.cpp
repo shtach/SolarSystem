@@ -474,38 +474,41 @@ void Renderer::renderMoons(const Simulation& simulation, const Camera& camera) {
 
 void Renderer::renderTrails(const Simulation& simulation, const Camera& camera) {
     const auto& bodies = simulation.getBodies();
-    
+
     glUseProgram(m_lineProgram);
-    GLuint lineScaleLoc = glGetUniformLocation(m_lineProgram, "uScale");
-    GLuint lineCamLoc = glGetUniformLocation(m_lineProgram, "uCam");
-    glUniform1f(lineScaleLoc, camera.getScale());
-    glUniform2f(lineCamLoc, static_cast<float>(camera.getX()), static_cast<float>(camera.getY()));
+    glUniform1f(glGetUniformLocation(m_lineProgram, "uScale"), camera.getScale());
+    glUniform2f(glGetUniformLocation(m_lineProgram, "uCam"),
+        static_cast<float>(camera.getX()),
+        static_cast<float>(camera.getY()));
 
     glBindVertexArray(m_trailVAO);
+    GLint colorLoc = glGetUniformLocation(m_lineProgram, "uColor");
 
     for (const auto& body : bodies) {
-        if (body.trail.size() < 4) continue;
+        const auto& trail = body.getTrail();
+        if (trail.size() < 4) { continue; }
 
         glBindBuffer(GL_ARRAY_BUFFER, m_trailVBO);
-        glBufferData(GL_ARRAY_BUFFER, body.trail.size() * sizeof(float), body.trail.data(), GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER,
+            static_cast<GLsizeiptr>(trail.size() * sizeof(float)),
+            trail.data(), GL_DYNAMIC_DRAW);
 
-        GLuint colorLoc = glGetUniformLocation(m_lineProgram, "uColor");
-        // Półprzezroczyste ślady
-        glUniform3f(colorLoc, body.color[0] * 0.8f, body.color[1] * 0.8f, body.color[2] * 0.8f);
-        glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(body.trail.size() / 2));
-    }
+        const auto& col = body.getColor();
+        glUniform3f(colorLoc, col[0] * 0.8F, col[1] * 0.8F, col[2] * 0.8F);
+        glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(trail.size() / 2));
 
-    // Ślady księżyców
-    for (const auto& body : bodies) {
         for (const auto& moon : body.getMoons()) {
-            if (moon.trail.size() < 4) continue;
+            const auto& moonTrail = moon.getTrail();
+            if (moonTrail.size() < 4) { continue; }
 
             glBindBuffer(GL_ARRAY_BUFFER, m_trailVBO);
-            glBufferData(GL_ARRAY_BUFFER, moon.trail.size() * sizeof(float), moon.trail.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER,
+                static_cast<GLsizeiptr>(moonTrail.size() * sizeof(float)),
+                moonTrail.data(), GL_DYNAMIC_DRAW);
 
-            GLuint colorLoc = glGetUniformLocation(m_lineProgram, "uColor");
-            glUniform3f(colorLoc, moon.color[0] * 0.6f, moon.color[1] * 0.6f, moon.color[2] * 0.6f);
-            glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(moon.trail.size() / 2));
+            const auto& moonCol = moon.getColor();
+            glUniform3f(colorLoc, moonCol[0] * 0.6F, moonCol[1] * 0.6F, moonCol[2] * 0.6F);
+            glDrawArrays(GL_LINE_STRIP, 0, static_cast<GLsizei>(moonTrail.size() / 2));
         }
     }
 
