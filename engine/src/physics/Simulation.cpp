@@ -1,4 +1,6 @@
 #include "engine/physics/Simulation.h"
+#include "engine/physics/QuadTree.h"
+
 #include <cmath>
 #include <random>
 
@@ -117,7 +119,7 @@ void Simulation::update(double frameTime, bool useCompute, bool drawTrails) {
     m_accumulator += frameTime * m_simulationSpeed;
 
     constexpr double physicsStep = 3600.0;
-    constexpr int maxStepsPerFrame = 1000;
+    constexpr int maxStepsPerFrame = 5;
 
     int steps = 0;
 
@@ -137,24 +139,27 @@ void Simulation::update(double frameTime, bool useCompute, bool drawTrails) {
 }
 
 void Simulation::computeGravityCPU() {
-    for (auto& body : m_bodies) {
-        body.setAcceleration(Vec2(0.0, 0.0));
+    // Find bounding box — tree needs to contain all bodies
+    double maxCoord = 0.0;
+    for (const auto& body : m_bodies) {
+        maxCoord = std::max(maxCoord, std::abs(body.getPosition().x));
+        maxCoord = std::max(maxCoord, std::abs(body.getPosition().y));
+    }
+    const double halfSize = maxCoord * 1.1; // 10% margin
+
+    QuadTree tree(Vec2(0.0, 0.0), halfSize);
+    for (int i = 0; i < static_cast<int>(m_bodies.size()); ++i) {
+        tree.insert(i, m_bodies[i].getPosition(), m_bodies[i].getMass());
     }
 
+    constexpr double theta     = 0.5;
     constexpr double softening = 1e10;
 
-    for (size_t i = 0; i < m_bodies.size(); ++i) {
-        for (size_t j = i + 1; j < m_bodies.size(); ++j) {
-            Vec2 delta = m_bodies[j].getPosition() - m_bodies[i].getPosition();
-            double distanceSq = delta.lengthSquared() + softening;
-            double distance = std::sqrt(distanceSq);
-            double invDistCube = 1.0 / (distanceSq * distance);
-            double force = m_G * m_bodies[i].getMass() * m_bodies[j].getMass() * invDistCube;
-
-            Vec2 forceVec = delta * force;
-            m_bodies[i].setAcceleration(m_bodies[i].getAcceleration() + forceVec / m_bodies[i].getMass());
-            m_bodies[j].setAcceleration(m_bodies[j].getAcceleration() - forceVec / m_bodies[j].getMass());
-        }
+    for (int i = 0; i < static_cast<int>(m_bodies.size()); ++i) {
+        Vec2 acc{0.0, 0.0};
+        tree.computeForce(i, m_bodies[i].getPosition(),
+                          acc, m_G, theta, softening);
+        m_bodies[i].setAcceleration(acc);
     }
 }
 
