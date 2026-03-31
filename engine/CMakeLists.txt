@@ -2,6 +2,7 @@ add_library(engine)
 
 target_sources(engine PRIVATE
     src/graphics/Renderer.cpp
+    src/graphics/Shader.cpp
     src/input/InputHandler.cpp
     src/physics/Body.cpp
     src/physics/Simulation.cpp
