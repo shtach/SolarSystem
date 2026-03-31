@@ -112,12 +112,13 @@ void Simulation::addAsteroids(int count) {
 }
 
 void Simulation::update(double frameTime, bool useCompute, bool drawTrails) {
-    if (m_paused) { return; }
+    if (m_paused) return;
 
     m_accumulator += frameTime * m_simulationSpeed;
 
-    constexpr double physicsStep = 86400.0;
+    constexpr double physicsStep = 3600.0;
     constexpr int maxStepsPerFrame = 1000;
+
     int steps = 0;
 
     while (m_accumulator >= physicsStep && steps < maxStepsPerFrame) {
@@ -168,6 +169,7 @@ void Simulation::velocityVerletStep(double dt) {
 
     std::vector<Vec2> oldAccelerations;
     oldAccelerations.reserve(m_bodies.size());
+
     for (const auto& body : m_bodies) {
         oldAccelerations.push_back(body.getAcceleration());
     }
