@@ -4,12 +4,10 @@ in vec3 vColor;
 out vec4 FragColor;
 
 void main() {
-    vec2 c         = gl_PointCoord - vec2(0.5);
-    float d        = length(c);
+    float d = length(gl_PointCoord - vec2(0.5));
+    if (d > 0.5) discard;
 
-    if (d > 0.5) 
-        discard;
-    
-    float alpha    = 1.0 - smoothstep(0.4, 0.5, d);
-    FragColor      = vec4(vColor, alpha);
+    // Hard core with soft edge
+    float alpha = 1.0 - smoothstep(0.35, 0.5, d);
+    FragColor = vec4(vColor, alpha);
 }

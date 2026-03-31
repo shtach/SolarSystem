@@ -1,9 +1,11 @@
 #version 330 core
+
 in vec3  vColor;
 in vec3  vAtmosphereColor;
 in float vAtmosphereSize;
 in float vHasAtmosphere;
 in float vSize;
+
 out vec4 FragColor;
 
 void main() {
