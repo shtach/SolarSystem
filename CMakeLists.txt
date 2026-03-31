@@ -13,3 +13,16 @@ add_subdirectory(external)
 add_subdirectory(engine)
 add_subdirectory(game)
 add_subdirectory(app)
+
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+
+if(CLANG_TIDY_EXE)
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY
+        ${CLANG_TIDY_EXE};
+        --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy;
+        -p=${CMAKE_BINARY_DIR}
+    )
+else()
+    message(WARNING "clang-tidy not found, skipping checks")
+endif()

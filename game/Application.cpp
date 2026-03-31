@@ -35,47 +35,44 @@ void Application::initializeGLAD() {
 }
 
 void Application::initializeSystems() {
-    m_camera = std::make_unique<Camera>();
-    m_renderer = std::make_unique<Renderer>();
+    m_camera     = std::make_unique<Camera>();
+    m_renderer   = std::make_unique<Renderer>();
     m_simulation = std::make_unique<Simulation>();
     m_inputHandler = std::make_unique<InputHandler>(m_window, m_camera.get());
 
     m_simulation->initializeSolarSystem();
     m_lastTime = glfwGetTime();
-    
-    // Ustaw widok na cały układ
     m_camera->viewWholeSystem();
 }
 
 void Application::processInput(double frameTime) {
     m_inputHandler->processInput(m_paused);
 
-    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) m_camera->move(0, 1, frameTime);
-    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) m_camera->move(0, -1, frameTime);
-    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) m_camera->move(-1, 0, frameTime);
-    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) m_camera->move(1, 0, frameTime);
-    
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) { m_camera->move( 0,  1, frameTime); }
+    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) { m_camera->move( 0, -1, frameTime); }
+    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) { m_camera->move(-1,  0, frameTime); }
+    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) { m_camera->move( 1,  0, frameTime); }
+
     if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS) {
         m_camera->viewWholeSystem();
         glfwWaitEventsTimeout(0.1);
     }
 
     if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
-        double speed = m_simulation->getSimulationSpeed();
-        m_simulation->setSimulationSpeed(std::min(speed * 2.0, 10000.0));
-        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x" << std::endl;
+        m_simulation->setSimulationSpeed(
+            std::min(m_simulation->getSimulationSpeed() * 2.0, 1e9));
+        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
         glfwWaitEventsTimeout(0.1);
     }
     if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        double speed = m_simulation->getSimulationSpeed();
-        m_simulation->setSimulationSpeed(std::max(speed / 2.0, 0.1));
-        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x" << std::endl;
+        m_simulation->setSimulationSpeed(
+            std::max(m_simulation->getSimulationSpeed() / 2.0, 1e4));
+        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
         glfwWaitEventsTimeout(0.1);
     }
-    
     if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS) {
-        m_simulation->setSimulationSpeed(1.0);
-        std::cout << "Simulation speed: 1x" << std::endl;
+        m_simulation->setSimulationSpeed(1e6);
+        std::cout << "Simulation speed: 1e6x\n";
         glfwWaitEventsTimeout(0.1);
     }
 }
@@ -92,39 +89,20 @@ void Application::render() {
 }
 
 void Application::run() {
-    std::cout << "=== SOLAR SYSTEM SIMULATION ===\n";
-    std::cout << "Controls:\n";
-    std::cout << "WASD - move camera\n";
-    std::cout << "Mouse wheel - zoom\n"; 
-    std::cout << "Left drag - pan\n";
-    std::cout << "Space - pause/unpause\n";
-    std::cout << "C - toggle compute shader\n";
-    std::cout << "T - toggle trails\n";
-    std::cout << "R - reset view to whole system\n";
-    std::cout << "UP/DOWN - increase/decrease simulation speed\n";
-    std::cout << "1 - reset to normal speed\n";
-    std::cout << "\nCurrent simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
-
-    std::cout << "Body count: " << m_simulation->getBodyCount() << std::endl;
-    std::cout << "Initial camera scale: " << m_camera->getScale() << std::endl;
-    
-    const auto& bodies = m_simulation->getBodies();
-    if (bodies.size() > 1) {
-        std::cout << "First planet position: " << bodies[1].position.x << ", " << bodies[1].position.y << std::endl;
-        std::cout << "First planet velocity: " << bodies[1].velocity.x << ", " << bodies[1].velocity.y << std::endl;
-    }
+    std::cout << "=== SOLAR SYSTEM SIMULATION ===\n"
+              << "WASD - move | Scroll - zoom | Drag - pan\n"
+              << "Space - pause | R - reset view\n"
+              << "UP/DOWN - speed | 1 - reset speed\n"
+              << "Speed: " << m_simulation->getSimulationSpeed() << "x | "
+              << "Bodies: " << m_simulation->getBodyCount() << "\n";
 
     while (!glfwWindowShouldClose(m_window)) {
         double currentTime = glfwGetTime();
-        double frameTime = currentTime - m_lastTime;
-        m_lastTime = currentTime;
+        double frameTime   = currentTime - m_lastTime;
+        m_lastTime         = currentTime;
 
         processInput(frameTime);
-
-        if (!m_paused) {
-            update(frameTime);
-        }
-
+        if (!m_paused) { update(frameTime); }
         render();
 
         glfwSwapBuffers(m_window);

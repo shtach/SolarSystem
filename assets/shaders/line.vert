@@ -1,8 +1,9 @@
 #version 330 core
+
 layout(location = 0) in vec2 aPos;
 
 uniform vec2 uCam;
-uniform vec2 uScale;
+uniform float uScale;
 
 void main() {
     vec2 p = (aPos - uCam) * uScale;

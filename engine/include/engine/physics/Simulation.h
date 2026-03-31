@@ -1,15 +1,16 @@
 #pragma once
-#include "Body.h"
+
+#include "engine/physics/Body.h"
+
 #include <vector>
 
 class Simulation {
 private:
     std::vector<Body> m_bodies;
     double m_accumulator = 0.0;
-    const double m_physicsDt = 86400.0; // ZMIENIONE: 1 dzień w sekundach
     const double m_G = 6.67430e-11;
     bool m_paused = false;
-    double m_simulationSpeed = 1.0;
+    double m_simulationSpeed = 1e6;
 
     void computeGravityCPU();
     void velocityVerletStep(double dt);
