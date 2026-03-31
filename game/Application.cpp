@@ -110,8 +110,10 @@ void Application::run() {
     
     const auto& bodies = m_simulation->getBodies();
     if (bodies.size() > 1) {
-        std::cout << "First planet position: " << bodies[1].position.x << ", " << bodies[1].position.y << std::endl;
-        std::cout << "First planet velocity: " << bodies[1].velocity.x << ", " << bodies[1].velocity.y << std::endl;
+        std::cout << "First planet position: "
+            << bodies[1].getPosition().x << ", " << bodies[1].getPosition().y << "\n";
+        std::cout << "First planet velocity: "
+            << bodies[1].getVelocity().x << ", " << bodies[1].getVelocity().y << "\n";
     }
 
     while (!glfwWindowShouldClose(m_window)) {
