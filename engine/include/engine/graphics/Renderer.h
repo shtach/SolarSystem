@@ -19,7 +19,7 @@ public:
     Renderer& operator=(Renderer&&)      = delete;
 
     void beginFrame();
-    void render(const Simulation& simulation, const Camera& camera);
+    void render(const Simulation& simulation, const Camera& camera, float time);
     void endFrame();
 
 private:
@@ -28,16 +28,23 @@ private:
     Shader m_glowShader;
     Shader m_lineShader;
     Shader m_atmosphereShader;
+    Shader m_sunShader;
+    Shader m_starShader;
 
     // Buffers
     GLuint m_pointsVAO{0};
     GLuint m_pointsVBO{0};
     GLuint m_trailVAO{0};
     GLuint m_trailVBO{0};
+    GLuint m_starVAO{0};
+    GLuint m_starVBO{0};
+    int    m_starCount{0};
 
     void setupBuffers();
+    void setupStars();
     void uploadBodyData(const std::vector<Body>& bodies);
-    void renderPoints(const Simulation& simulation, const Camera& camera);
-    void renderAtmospheres(const Simulation& simulation, const Camera& camera);
+    void renderStars(float time);
+    void renderPoints(const Simulation& simulation, const Camera& camera, float time);
+    void renderAtmospheres(const Simulation& simulation, const Camera& camera, float time);
     void renderTrails(const Simulation& simulation, const Camera& camera);
 };
