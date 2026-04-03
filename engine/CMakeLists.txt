@@ -8,6 +8,7 @@ target_sources(engine PRIVATE
     src/physics/Body.cpp
     src/physics/QuadTree.cpp
     src/physics/Simulation.cpp
+    src/core/Logger.cpp
 )
 
 target_include_directories(engine PUBLIC
