@@ -8,37 +8,67 @@ in float vSize;
 
 out vec4 FragColor;
 
+uniform float uTime;
+
 void main() {
-    if (vHasAtmosphere < 0.5) discard;  // was > 0.5 — inverted
+    if (vHasAtmosphere < 0.5) discard;
 
-    vec2  coord  = gl_PointCoord - vec2(0.5);
-    float dist   = length(coord);
-    float planetRadius = 0.5 / max(vAtmosphereSize, 0.0001);
+    vec2  coord   = gl_PointCoord - vec2(0.5);
+    float dist    = length(coord);
+    float planetR = 0.5 / max(vAtmosphereSize, 0.0001);
 
-    // Saturn rings — size 40.0 in your simulation
-    if (vSize > 38.0 && vSize < 42.0) {
-        float innerRing = planetRadius * 1.3;
-        float outerRing = planetRadius * 2.2;
+    // ---- Saturn rings (size ~50) ----
+    if (vSize > 48.0 && vSize < 52.0) {
+        float innerEdge = planetR * 1.22;
+        float outerEdge = 0.488;
+        if (dist < innerEdge || dist > outerEdge) discard;
 
-        if (dist > innerRing && dist < outerRing) {
-            float ringPattern = mod(dist * 30.0, 1.0);
-            if (ringPattern > 0.25) {
-                float fade  = 1.0 - smoothstep(innerRing, outerRing, dist);
-                float alpha = 0.7 * fade * smoothstep(innerRing, innerRing + 0.02, dist);
-                FragColor = vec4(0.92, 0.84, 0.65, alpha);
-                return;
-            }
-        }
+        float t = (dist - innerEdge) / (outerEdge - innerEdge);  // 0..1
+
+        // B ring
+        float bRing   = smoothstep(0.0, 0.04, t) * (1.0 - smoothstep(0.42, 0.49, t));
+        // Cassini division
+        float cassini = 1.0 - smoothstep(0.46, 0.49, t) * (1.0 - smoothstep(0.49, 0.52, t));
+        // A ring
+        float aRing   = smoothstep(0.51, 0.57, t) * (1.0 - smoothstep(0.87, 0.97, t)) * 0.72;
+
+        float fine  = sin(t * 240.0) * 0.5 + 0.5;
+        float mask  = (bRing + aRing) * cassini;
+        float alpha = mask * mix(0.55, 0.92, fine) * 0.90;
+        if (alpha < 0.02) discard;
+
+        vec3 ringCol = mix(vec3(0.94, 0.87, 0.68), vec3(0.70, 0.60, 0.40), fine * 0.35);
+        FragColor = vec4(ringCol, alpha);
+        return;
     }
 
-    // Atmosphere for all other bodies
-    if (dist < planetRadius || dist > 0.5) discard;
+    // ---- Atmosphere ----
+    if (dist < planetR || dist > 0.5) discard;
 
-    float a1    = 1.0 - smoothstep(planetRadius, 0.5 * 0.7, dist);
-    float a2    = 1.0 - smoothstep(0.5 * 0.7, 0.5, dist);
-    float alpha = (a1 * 0.8 + a2 * 0.2) * 0.4;
+    float t = (dist - planetR) / (0.5 - planetR);  // 0 = planet edge, 1 = outer
 
-    if (vSize > 35.0) alpha *= 2.0;  // Sun
+    // Bright limb right at the planet's edge
+    float rim  = exp(-t * 6.0) * 0.85;
 
-    FragColor = vec4(vAtmosphereColor, alpha);
+    // Softer outer glow — wider for gas giants
+    float haze = (1.0 - smoothstep(0.0, 1.0, t));
+    haze = pow(haze, 2.5);
+
+    float alpha = rim * 0.65 + haze * 0.20;
+
+    // Animated shimmer on gas giants
+    if (vSize > 30.0) {
+        float shimmer = sin(uTime * 0.8 + dist * 40.0) * 0.04 + 1.0;
+        alpha *= shimmer * 1.4;
+    }
+
+    // Sun corona — very strong
+    if (vSize > 52.0) {
+        alpha *= 2.8;
+    }
+
+    // Rim color brightening (Rayleigh scattering — edge looks lighter)
+    vec3 rimColor = mix(vAtmosphereColor, vAtmosphereColor * 1.4 + 0.1, exp(-t * 8.0));
+
+    FragColor = vec4(rimColor, clamp(alpha, 0.0, 1.0));
 }

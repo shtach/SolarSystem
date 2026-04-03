@@ -4,9 +4,15 @@ in vec3 vColor;
 out vec4 FragColor;
 
 void main() {
-    float d = length(gl_PointCoord - vec2(0.5));
-    if (d > 0.5) discard;
+    vec2  coord = gl_PointCoord - vec2(0.5);
+    float dist  = length(coord);
+    if (dist > 0.5) discard;
 
-    float alpha = pow(1.0 - smoothstep(0.0, 0.5, d), 1.5);
-    FragColor = vec4(vColor * 2.5, alpha * 0.6);
+    // Exponential falloff — tight, realistic halo
+    float glow = exp(-dist * 7.0) * 0.75;
+
+    // Shift toward white-hot at center
+    vec3 color = mix(vColor, vec3(1.0, 0.95, 0.8), smoothstep(0.2, 0.0, dist) * 0.5);
+
+    FragColor = vec4(color, glow);
 }
