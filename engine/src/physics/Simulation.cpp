@@ -8,9 +8,9 @@ void Simulation::initializeSolarSystem() {
     m_bodies.clear();
     m_bodies.reserve(1100);
 
-    Body sun(1.9885e30, Vec2(0.0, 0.0), Vec2(0.0, 0.0), 50.0F);
-    sun.setColor(1.0F, 0.9F, 0.1F);
-    sun.setAtmosphere(1.5F, 1.0F, 0.8F, 0.2F);
+    Body sun(1.9885e30, Vec2(0.0, 0.0), Vec2(0.0, 0.0), 55.0F);
+    sun.setColor(1.0F, 0.92F, 0.15F);
+    sun.setAtmosphere(1.6F, 1.0F, 0.75F, 0.1F);
     m_bodies.push_back(sun);
 
     auto addPlanet = [this](double mass, double radius, float size,
@@ -27,14 +27,15 @@ void Simulation::initializeSolarSystem() {
         return m_bodies.size() - 1;
     };
 
-    size_t mercury = addPlanet(3.3011e23, 5.791e10,  8.0F, 0.6F, 0.6F, 0.6F);
-    size_t venus   = addPlanet(4.8675e24, 1.082e11, 12.0F, 0.9F, 0.7F, 0.3F, true, 1.4F, 1.0F, 0.6F, 0.2F);
-    size_t earth   = addPlanet(5.972e24,  1.496e11, 13.0F, 0.2F, 0.4F, 1.0F, true, 1.3F, 0.3F, 0.5F, 1.0F);
-    size_t mars    = addPlanet(6.4171e23, 2.279e11, 10.0F, 0.8F, 0.3F, 0.2F, true, 1.2F, 0.8F, 0.4F, 0.3F);
-    size_t jupiter = addPlanet(1.8982e27, 7.785e11, 45.0F, 0.8F, 0.6F, 0.4F, true, 1.5F, 0.9F, 0.7F, 0.5F);
-    size_t saturn  = addPlanet(5.6834e26, 1.429e12, 40.0F, 0.95F, 0.85F, 0.6F, true, 1.8F, 0.9F, 0.8F, 0.6F);
-    size_t uranus  = addPlanet(8.6810e25, 2.871e12, 25.0F, 0.6F, 0.8F, 0.95F, true, 1.4F, 0.6F, 0.8F, 0.95F);
-    size_t neptune = addPlanet(1.02413e26, 4.498e12, 25.0F, 0.2F, 0.2F, 0.8F, true, 1.4F, 0.2F, 0.3F, 0.9F);
+    // Sizes scaled for visibility — larger values = more pixels for shading detail
+    size_t mercury = addPlanet(3.3011e23, 5.791e10, 13.0F, 0.68F, 0.58F, 0.50F);
+    size_t venus   = addPlanet(4.8675e24, 1.082e11, 18.0F, 0.98F, 0.88F, 0.60F, true, 1.5F, 1.0F, 0.80F, 0.35F);
+    size_t earth   = addPlanet(5.972e24,  1.496e11, 20.0F, 0.20F, 0.52F, 1.00F, true, 1.4F, 0.3F, 0.60F, 1.00F);
+    size_t mars    = addPlanet(6.4171e23, 2.279e11, 15.0F, 0.92F, 0.32F, 0.12F, true, 1.3F, 0.9F, 0.45F, 0.25F);
+    size_t jupiter = addPlanet(1.8982e27, 7.785e11, 58.0F, 0.85F, 0.65F, 0.42F, true, 1.6F, 0.95F, 0.75F, 0.50F);
+    size_t saturn  = addPlanet(5.6834e26, 1.429e12, 50.0F, 0.96F, 0.88F, 0.62F, true, 1.9F, 0.96F, 0.85F, 0.60F);
+    size_t uranus  = addPlanet(8.6810e25, 2.871e12, 35.0F, 0.52F, 0.86F, 0.95F, true, 1.5F, 0.52F, 0.85F, 0.98F);
+    size_t neptune = addPlanet(1.02413e26, 4.498e12, 35.0F, 0.15F, 0.22F, 0.98F, true, 1.5F, 0.18F, 0.32F, 1.00F);
 
     // suppress unused-variable — indices only used in addMoonsToSimulation
     (void)mercury;
