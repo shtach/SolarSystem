@@ -84,7 +84,7 @@ void Application::update(double frameTime) {
 
 void Application::render() {
     m_renderer->beginFrame();
-    m_renderer->render(*m_simulation, *m_camera);
+    m_renderer->render(*m_simulation, *m_camera, static_cast<float>(glfwGetTime()));
     m_renderer->endFrame();
 }
 
