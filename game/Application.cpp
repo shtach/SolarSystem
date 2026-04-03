@@ -1,5 +1,5 @@
+#include "engine/core/Logger.h"
 #include "Application.h"
-#include <iostream>
 
 Application::Application() {
     initializeGLFW();
@@ -61,18 +61,18 @@ void Application::processInput(double frameTime) {
     if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
         m_simulation->setSimulationSpeed(
             std::min(m_simulation->getSimulationSpeed() * 2.0, 1e9));
-        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
+        LOG_INFO("App", "Simulation speed: " + std::to_string(m_simulation->getSimulationSpeed()) + "x");
         glfwWaitEventsTimeout(0.1);
     }
     if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
         m_simulation->setSimulationSpeed(
             std::max(m_simulation->getSimulationSpeed() / 2.0, 1e4));
-        std::cout << "Simulation speed: " << m_simulation->getSimulationSpeed() << "x\n";
+        LOG_INFO("App", "Simulation speed: " + std::to_string(m_simulation->getSimulationSpeed()) + "x");
         glfwWaitEventsTimeout(0.1);
     }
     if (glfwGetKey(m_window, GLFW_KEY_1) == GLFW_PRESS) {
         m_simulation->setSimulationSpeed(1e6);
-        std::cout << "Simulation speed: 1e6x\n";
+        LOG_INFO("App", "Simulation speed reset to 1e6x");
         glfwWaitEventsTimeout(0.1);
     }
 }
@@ -89,12 +89,11 @@ void Application::render() {
 }
 
 void Application::run() {
-    std::cout << "=== SOLAR SYSTEM SIMULATION ===\n"
-              << "WASD - move | Scroll - zoom | Drag - pan\n"
-              << "Space - pause | R - reset view\n"
-              << "UP/DOWN - speed | 1 - reset speed\n"
-              << "Speed: " << m_simulation->getSimulationSpeed() << "x | "
-              << "Bodies: " << m_simulation->getBodyCount() << "\n";
+    LOG_INFO("App", "=== SOLAR SYSTEM SIMULATION ===");
+    LOG_INFO("App", "WASD - move | Scroll - zoom | Drag - pan");
+    LOG_INFO("App", "Space - pause | R - reset view | UP/DOWN - speed");
+    LOG_INFO("App", "Bodies: " + std::to_string(m_simulation->getBodyCount())
+              + " | Speed: " + std::to_string(m_simulation->getSimulationSpeed()) + "x");
 
     while (!glfwWindowShouldClose(m_window)) {
         double currentTime = glfwGetTime();

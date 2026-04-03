@@ -1,4 +1,5 @@
 #include "engine/graphics/Shader.h"
+#include "engine/core/Logger.h"
 #include "glad/gl.h"
 
 #include <fstream>
@@ -57,7 +58,7 @@ Shader& Shader::operator=(Shader&& other) noexcept {
 
 void Shader::use() const {
     if (m_programId == 0) {
-        std::cerr << "Using invalid shader!\n";
+        LOG_WARN("Shader", "Attemped to use invalid program");
         return;
     }
     
@@ -96,7 +97,7 @@ std::string Shader::loadFile(const std::string& path) {
     std::ifstream file(path);
 
     if (!file.is_open()) {
-        std::cerr << "Shader: cannot open file: " << path << '\n';
+        LOG_ERROR("Shader", "Cannot open file: " + path);
         return {};
     }
 
@@ -131,7 +132,7 @@ bool Shader::checkCompile(GLuint shader, const std::string& path) {
     if (success == 0) {
         char infoLog[512];
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cerr << "Shader compile error [" << path << "]\n" << infoLog << '\n';
+        LOG_ERROR("Shader", "Compile error in [" + path + "]:\n" + infoLog);
         return false;
     }
 
@@ -145,7 +146,7 @@ bool Shader::checkLink(GLuint program) {
     if (success == 0) {
         char infoLog[512];
         glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        std::cerr << "Shader link error:\n" << infoLog << '\n';
+        LOG_ERROR("Shader", "Link error:\n" + std::string(infoLog));
         return false;
     }
     return true;
