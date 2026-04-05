@@ -19,7 +19,8 @@ uniform float uScale;   // was vec2 — this was the GL error
 void main() {
     vec2 p       = (aPos - uCam) * uScale;
     gl_Position  = vec4(p, 0.0, 1.0);
-    gl_PointSize = aSize * aAtmosphereSize;
+    float zoomFactor = clamp(uScale / 2e-13, 0.15, 1.0);
+    gl_PointSize = aSize * aAtmosphereSize * zoomFactor;
 
     vColor           = aColor;
     vAtmosphereColor = aAtmosphereColor;
