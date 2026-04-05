@@ -19,6 +19,7 @@ public:
         float ar{};
         float ag{};
         float ab{};
+        float texIndex{-1.0F}; // -1 = procedural
     };
 
     Body(double mass = 0.0,
@@ -44,6 +45,8 @@ public:
     void setColor(float red, float green, float blue) {
         m_color = {red, green, blue};
     }
+    void setTexIndex(float idx) { m_texIndex = idx; }
+    float getTexIndex() const { return m_texIndex; }
 
     // --- Trail ---
     const std::vector<float>& getTrail() const { return m_trail; }
@@ -81,6 +84,8 @@ private:
     bool m_hasAtmosphere{false};
     float m_atmosphereSize{0.0F};
     std::array<float, 3> m_atmosphereColor{0.5F, 0.5F, 1.0F};
+
+    float m_texIndex{-1.0F};
 
     std::vector<Body> m_moons{};
 };

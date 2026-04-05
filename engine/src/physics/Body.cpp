@@ -46,6 +46,7 @@ Body::GPUBody Body::toGPUBody() const {
         m_color[0], m_color[1], m_color[2],
         m_hasAtmosphere ? 1.0F : 0.0F,
         m_atmosphereSize,
-        m_atmosphereColor[0], m_atmosphereColor[1], m_atmosphereColor[2]
+        m_atmosphereColor[0], m_atmosphereColor[1], m_atmosphereColor[2],
+        m_texIndex
     };
 }
