@@ -17,6 +17,7 @@ target_include_directories(engine PUBLIC
 
 target_include_directories(engine PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/external/stb
 )
 
 target_link_libraries(engine PUBLIC
