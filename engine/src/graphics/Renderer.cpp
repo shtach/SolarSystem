@@ -3,6 +3,9 @@
 #include <random>
 #include <assert.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 Renderer::Renderer(const std::string& shaderDir)
     : m_pointShader     (shaderDir + "points.vert",     shaderDir + "points.frag")
     , m_glowShader      (shaderDir + "points.vert",     shaderDir + "glow.frag")
@@ -21,6 +24,7 @@ Renderer::Renderer(const std::string& shaderDir)
 
     setupBuffers();
     setupStars();
+    loadTextures(shaderDir + "../textures/");
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -38,6 +42,7 @@ Renderer::~Renderer() {
     glDeleteBuffers(1, &m_trailVBO);
     glDeleteVertexArrays(1, &m_starVAO);
     glDeleteBuffers(1, &m_starVBO);
+    if (m_texArray) glDeleteTextures(1, &m_texArray);
 }
 
 void Renderer::setupBuffers() {
@@ -47,8 +52,8 @@ void Renderer::setupBuffers() {
     glBindVertexArray(m_pointsVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_pointsVBO);
 
-    // Layout: pos(2) size(1) color(3) hasAtm(1) atmSize(1) atmColor(3) = 11 floats
-    constexpr GLsizei stride = 11 * static_cast<GLsizei>(sizeof(float));
+    // Layout: pos(2) size(1) color(3) hasAtm(1) atmSize(1) atmColor(3) texIndex(1) = 12 floats
+    constexpr GLsizei stride = 12 * static_cast<GLsizei>(sizeof(float));
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(1);
@@ -61,6 +66,8 @@ void Renderer::setupBuffers() {
     glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(7 * sizeof(float)));
     glEnableVertexAttribArray(5);
     glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(8 * sizeof(float)));
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(11 * sizeof(float)));
 
     glGenVertexArrays(1, &m_trailVAO);
     glGenBuffers(1, &m_trailVBO);
@@ -123,7 +130,7 @@ void Renderer::renderStars(float time) {
 
 void Renderer::uploadBodyData(const std::vector<Body>& bodies) {
     std::vector<float> data;
-    data.reserve(bodies.size() * 11);
+    data.reserve(bodies.size() * 12);
 
     for (const auto& body : bodies) {
         const auto gpu = body.toGPUBody();
@@ -131,7 +138,8 @@ void Renderer::uploadBodyData(const std::vector<Body>& bodies) {
             gpu.x, gpu.y, gpu.size,
             gpu.r, gpu.g, gpu.b,
             gpu.hasAtmosphere, gpu.atmosphereSize,
-            gpu.ar, gpu.ag, gpu.ab
+            gpu.ar, gpu.ag, gpu.ab,
+            gpu.texIndex
         });
     }
 
@@ -140,6 +148,43 @@ void Renderer::uploadBodyData(const std::vector<Body>& bodies) {
     glBufferData(GL_ARRAY_BUFFER,
         static_cast<GLsizeiptr>(data.size() * sizeof(float)),
         data.data(), GL_DYNAMIC_DRAW);
+}
+
+void Renderer::loadTextures(const std::string& texDir) {
+    // Ordered to match texIndex: 0=sun 1=mercury 2=venus 3=earth 4=mars
+    //                            5=jupiter 6=saturn 7=uranus 8=neptune
+    //                            9=moon_rocky 10=moon_icy 11=moon_volcanic
+    static const char* names[TEX_COUNT] = {
+        "sun.png", "mercury.png", "venus.png", "earth.png", "mars.png",
+        "jupiter.png", "saturn.png", "uranus.png", "neptune.png",
+        "moon_rocky.png", "moon_icy.png", "moon_volcanic.png"
+    };
+
+    glGenTextures(1, &m_texArray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_texArray);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8,
+                 TEX_SIZE, TEX_SIZE, TEX_COUNT,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    stbi_set_flip_vertically_on_load(1);
+
+    for (int i = 0; i < TEX_COUNT; ++i) {
+        int w{}, h{}, ch{};
+        std::string path = texDir + names[i];
+        unsigned char* pixels = stbi_load(path.c_str(), &w, &h, &ch, 4);
+        if (pixels) {
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
+                            0, 0, i, w, h, 1,
+                            GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+            stbi_image_free(pixels);
+        }
+    }
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void Renderer::beginFrame() {
@@ -172,12 +217,17 @@ void Renderer::renderPoints(const Simulation& simulation, const Camera& camera, 
     const auto camX = static_cast<float>(camera.getX());
     const auto camY = static_cast<float>(camera.getY());
 
-    // --- Sun (body 0) — animated shader ---
+    // Bind texture array to unit 0 for all planet shaders
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_texArray);
+
+    // --- Sun (body 0) ---
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     m_sunShader.use();
     m_sunShader.setFloat("uScale", camera.getScale());
     m_sunShader.setVec2("uCam", camX, camY);
     m_sunShader.setFloat("uTime", time);
+    m_sunShader.setInt("uTextures", 0);
     glDrawArrays(GL_POINTS, 0, 1);
 
     // --- All other bodies (1..N) ---
@@ -198,8 +248,10 @@ void Renderer::renderPoints(const Simulation& simulation, const Camera& camera, 
     m_pointShader.setFloat("uTime",  time);
     m_pointShader.setVec2("uCam", camX, camY);
     m_pointShader.setVec2("uSunPos", sunX, sunY);
+    m_pointShader.setInt("uTextures", 0);
     glDrawArrays(GL_POINTS, 1, rest);
 
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
     glBindVertexArray(0);
 }
 
