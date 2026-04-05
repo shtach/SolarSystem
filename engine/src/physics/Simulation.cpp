@@ -11,15 +11,18 @@ void Simulation::initializeSolarSystem() {
     Body sun(1.9885e30, Vec2(0.0, 0.0), Vec2(0.0, 0.0), 55.0F);
     sun.setColor(1.0F, 0.92F, 0.15F);
     sun.setAtmosphere(1.6F, 1.0F, 0.75F, 0.1F);
+    sun.setTexIndex(0.0F);
     m_bodies.push_back(sun);
 
     auto addPlanet = [this](double mass, double radius, float size,
                              float red, float green, float blue,
+                             float texIdx,
                              bool atmosphere = false, float atmSize = 0.0F,
                              float ar = 0.0F, float ag = 0.0F, float ab = 0.0F) -> size_t {
         double orbitalVelocity = std::sqrt(m_G * m_bodies[0].getMass() / radius);
         Body planet(mass, Vec2(radius, 0.0), Vec2(0.0, orbitalVelocity), size);
         planet.setColor(red, green, blue);
+        planet.setTexIndex(texIdx);
         if (atmosphere) {
             planet.setAtmosphere(atmSize, ar, ag, ab);
         }
@@ -28,14 +31,15 @@ void Simulation::initializeSolarSystem() {
     };
 
     // Sizes scaled for visibility — larger values = more pixels for shading detail
-    size_t mercury = addPlanet(3.3011e23, 5.791e10, 13.0F, 0.68F, 0.58F, 0.50F);
-    size_t venus   = addPlanet(4.8675e24, 1.082e11, 18.0F, 0.98F, 0.88F, 0.60F, true, 1.5F, 1.0F, 0.80F, 0.35F);
-    size_t earth   = addPlanet(5.972e24,  1.496e11, 20.0F, 0.20F, 0.52F, 1.00F, true, 1.4F, 0.3F, 0.60F, 1.00F);
-    size_t mars    = addPlanet(6.4171e23, 2.279e11, 15.0F, 0.92F, 0.32F, 0.12F, true, 1.3F, 0.9F, 0.45F, 0.25F);
-    size_t jupiter = addPlanet(1.8982e27, 7.785e11, 58.0F, 0.85F, 0.65F, 0.42F, true, 1.6F, 0.95F, 0.75F, 0.50F);
-    size_t saturn  = addPlanet(5.6834e26, 1.429e12, 50.0F, 0.96F, 0.88F, 0.62F, true, 1.9F, 0.96F, 0.85F, 0.60F);
-    size_t uranus  = addPlanet(8.6810e25, 2.871e12, 35.0F, 0.52F, 0.86F, 0.95F, true, 1.5F, 0.52F, 0.85F, 0.98F);
-    size_t neptune = addPlanet(1.02413e26, 4.498e12, 35.0F, 0.15F, 0.22F, 0.98F, true, 1.5F, 0.18F, 0.32F, 1.00F);
+    // texIndex: 1=mercury 2=venus 3=earth 4=mars 5=jupiter 6=saturn 7=uranus 8=neptune
+    size_t mercury = addPlanet(3.3011e23, 5.791e10, 13.0F, 0.68F, 0.58F, 0.50F, 1.0F);
+    size_t venus   = addPlanet(4.8675e24, 1.082e11, 18.0F, 0.98F, 0.88F, 0.60F, 2.0F, true, 1.5F, 1.0F, 0.80F, 0.35F);
+    size_t earth   = addPlanet(5.972e24,  1.496e11, 20.0F, 0.20F, 0.52F, 1.00F, 3.0F, true, 1.4F, 0.3F, 0.60F, 1.00F);
+    size_t mars    = addPlanet(6.4171e23, 2.279e11, 15.0F, 0.92F, 0.32F, 0.12F, 4.0F, true, 1.3F, 0.9F, 0.45F, 0.25F);
+    size_t jupiter = addPlanet(1.8982e27, 7.785e11, 58.0F, 0.85F, 0.65F, 0.42F, 5.0F, true, 1.6F, 0.95F, 0.75F, 0.50F);
+    size_t saturn  = addPlanet(5.6834e26, 1.429e12, 50.0F, 0.96F, 0.88F, 0.62F, 6.0F, true, 1.9F, 0.96F, 0.85F, 0.60F);
+    size_t uranus  = addPlanet(8.6810e25, 2.871e12, 35.0F, 0.52F, 0.86F, 0.95F, 7.0F, true, 1.5F, 0.52F, 0.85F, 0.98F);
+    size_t neptune = addPlanet(1.02413e26, 4.498e12, 35.0F, 0.15F, 0.22F, 0.98F, 8.0F, true, 1.5F, 0.18F, 0.32F, 1.00F);
 
     // suppress unused-variable — indices only used in addMoonsToSimulation
     (void)mercury;
@@ -47,9 +51,10 @@ void Simulation::initializeSolarSystem() {
 void Simulation::addMoonsToSimulation(size_t earth, size_t mars, size_t jupiter,
                                        size_t saturn, size_t uranus, size_t neptune) {
     // Helper: add a body orbiting a parent at a given index
+    // texIndex: 9=moon_rocky  10=moon_icy  11=moon_volcanic
     auto addSatellite = [this](size_t parentIdx, double mass, double distance,
                                 float size, float red, float green, float blue,
-                                double angle) {
+                                double angle, float texIdx = 9.0F) {
         const Vec2 parentPos = m_bodies[parentIdx].getPosition();
         const Vec2 parentVel = m_bodies[parentIdx].getVelocity();
         double orbitalVelocity = std::sqrt(m_G * m_bodies[parentIdx].getMass() / distance);
@@ -60,34 +65,35 @@ void Simulation::addMoonsToSimulation(size_t earth, size_t mars, size_t jupiter,
 
         Body satellite(mass, pos, vel, size);
         satellite.setColor(red, green, blue);
+        satellite.setTexIndex(texIdx);
         m_bodies.push_back(satellite);
     };
 
-    // Earth
-    addSatellite(earth,   7.3477e22, 3.844e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.1);
+    // Earth — Moon (rocky)
+    addSatellite(earth,   7.3477e22, 3.844e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.1, 9.0F);
 
-    // Mars
-    addSatellite(mars,  1.0659e16, 9.377e6,  2.0F, 0.8F, 0.7F, 0.7F, 0.2);
-    addSatellite(mars,  1.4762e15, 2.346e7,  1.6F, 0.7F, 0.6F, 0.6F, 0.4);
+    // Mars — Phobos, Deimos (rocky)
+    addSatellite(mars,  1.0659e16, 9.377e6,  2.0F, 0.8F, 0.7F, 0.7F, 0.2, 9.0F);
+    addSatellite(mars,  1.4762e15, 2.346e7,  1.6F, 0.7F, 0.6F, 0.6F, 0.4, 9.0F);
 
-    // Jupiter
-    addSatellite(jupiter, 8.9319e22, 4.217e8,  4.5F, 1.0F, 0.9F, 0.8F, 0.0);
-    addSatellite(jupiter, 4.7998e22, 6.709e8,  3.9F, 0.9F, 0.9F, 1.0F, 0.5);
-    addSatellite(jupiter, 1.4819e23, 1.070e9,  6.0F, 0.8F, 0.8F, 0.9F, 1.0);
-    addSatellite(jupiter, 1.0759e23, 1.883e9,  5.4F, 0.7F, 0.7F, 0.8F, 1.5);
+    // Jupiter — Io(volcanic), Europa(icy), Ganymede(icy), Callisto(rocky)
+    addSatellite(jupiter, 8.9319e22, 4.217e8,  4.5F, 1.0F, 0.9F, 0.8F, 0.0, 11.0F);
+    addSatellite(jupiter, 4.7998e22, 6.709e8,  3.9F, 0.9F, 0.9F, 1.0F, 0.5, 10.0F);
+    addSatellite(jupiter, 1.4819e23, 1.070e9,  6.0F, 0.8F, 0.8F, 0.9F, 1.0, 10.0F);
+    addSatellite(jupiter, 1.0759e23, 1.883e9,  5.4F, 0.7F, 0.7F, 0.8F, 1.5, 9.0F);
 
-    // Saturn
-    addSatellite(saturn,  1.3452e23, 1.221e9,  5.0F, 1.0F, 0.9F, 0.8F, 0.2);
-    addSatellite(saturn,  1.080e21,  1.855e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.7);
-    addSatellite(saturn,  1.205e21,  2.380e8,  3.25F, 0.9F, 0.9F, 1.0F, 1.2);
+    // Saturn — Titan(volcanic/hazy), Enceladus(icy), Tethys(icy)
+    addSatellite(saturn,  1.3452e23, 1.221e9,  5.0F, 1.0F, 0.9F, 0.8F, 0.2, 11.0F);
+    addSatellite(saturn,  1.080e21,  1.855e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.7, 10.0F);
+    addSatellite(saturn,  1.205e21,  2.380e8,  3.25F, 0.9F, 0.9F, 1.0F, 1.2, 10.0F);
 
-    // Uranus
-    addSatellite(uranus,  6.59e21,   1.910e8,  3.0F, 0.8F, 0.9F, 1.0F, 0.1);
-    addSatellite(uranus,  1.27e21,   2.660e8,  2.4F, 0.8F, 0.9F, 1.0F, 0.8);
-    addSatellite(uranus,  3.49e21,   4.360e8,  3.2F, 0.8F, 0.9F, 1.0F, 1.4);
+    // Uranus moons (rocky)
+    addSatellite(uranus,  6.59e21,   1.910e8,  3.0F, 0.8F, 0.9F, 1.0F, 0.1, 9.0F);
+    addSatellite(uranus,  1.27e21,   2.660e8,  2.4F, 0.8F, 0.9F, 1.0F, 0.8, 9.0F);
+    addSatellite(uranus,  3.49e21,   4.360e8,  3.2F, 0.8F, 0.9F, 1.0F, 1.4, 9.0F);
 
-    // Neptune (Triton)
-    addSatellite(neptune, 2.14e22,   3.547e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.3);
+    // Neptune — Triton (icy)
+    addSatellite(neptune, 2.14e22,   3.547e8,  3.0F, 0.9F, 0.9F, 1.0F, 0.3, 10.0F);
 }
 
 void Simulation::addAsteroids(int count) {

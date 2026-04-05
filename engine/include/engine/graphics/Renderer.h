@@ -40,8 +40,14 @@ private:
     GLuint m_starVBO{0};
     int    m_starCount{0};
 
+    // Textures
+    GLuint m_texArray{0};
+    static constexpr int TEX_COUNT = 12;
+    static constexpr int TEX_SIZE  = 540;
+
     void setupBuffers();
     void setupStars();
+    void loadTextures(const std::string& texDir);
     void uploadBodyData(const std::vector<Body>& bodies);
     void renderStars(float time);
     void renderPoints(const Simulation& simulation, const Camera& camera, float time);
