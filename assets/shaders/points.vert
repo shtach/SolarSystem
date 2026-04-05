@@ -3,10 +3,12 @@
 layout(location = 0) in vec2  aPos;
 layout(location = 1) in float aSize;
 layout(location = 2) in vec3  aColor;
+layout(location = 6) in float aTexIndex;
 
 out vec3  vColor;
 out vec2  vWorldPos;
 out float vSize;
+out float vTexIndex;
 
 uniform vec2  uCam;
 uniform float uScale;
@@ -19,4 +21,5 @@ void main() {
     vColor    = aColor;
     vWorldPos = vec2(aPos);
     vSize     = aSize;
+    vTexIndex = aTexIndex;
 }

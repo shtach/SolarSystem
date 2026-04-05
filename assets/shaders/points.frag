@@ -3,13 +3,15 @@
 in vec3  vColor;
 in vec2  vWorldPos;
 in float vSize;
+in float vTexIndex;
 
 out vec4 FragColor;
 
+uniform sampler2DArray uTextures;
 uniform vec2  uSunPos;
 uniform float uTime;
 
-// --- Value noise ---
+// --- Value noise (used for procedural asteroids) ---
 float hash(vec2 p) {
     p = fract(p * vec2(127.1, 311.7));
     p += dot(p, p + 45.32);
@@ -40,42 +42,29 @@ void main() {
     float light = dot(N, toSun);
     float shade = clamp(light * 0.5 + 0.65, 0.12, 1.0);
 
-    // --- Per-planet type visual ---
-    vec2  seed    = fract(vWorldPos * 1e-11) * 100.0;
-    vec3  color   = vColor;
+    vec3 color;
 
-    // Gas giants: Jupiter(58), Saturn(50), Uranus(35), Neptune(35)
-    if (vSize > 30.0) {
-        // Animated horizontal cloud bands
-        float drift = uTime * 0.04;
-        float y     = coord.y / 0.5;  // -1..1
+    if (vTexIndex >= 0.0) {
+        // --- Textured body: sample the texture array ---
+        // gl_PointCoord is (0,0) top-left → flip Y for OpenGL convention
+        vec2 uv = vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y);
+        // Crop to circle: remap uv so the disc fills the texture
+        uv = uv * 2.0 - 1.0;           // -1..1
+        if (length(uv) > 1.0) discard;
+        uv = uv * 0.5 + 0.5;           // back to 0..1
 
-        float b1 = sin(y * 10.0 * 3.14159 + drift)        * 0.5 + 0.5;
-        float b2 = sin(y * 17.0 * 3.14159 - drift * 1.3)  * 0.5 + 0.5;
-        float band = mix(b1, b2, 0.4);
+        vec4 texSample = texture(uTextures, vec3(uv, vTexIndex));
+        color = texSample.rgb;
 
-        // Darken the band valleys, brighten the peaks
-        color = mix(vColor * 0.65, vColor * 1.15, band);
-
-        // Storm spot for Jupiter (size ~58) — rough oval near equator
-        if (vSize > 54.0) {
-            vec2 stormCenter = vec2(0.1, 0.08);
-            float stormDist  = length((coord - stormCenter) * vec2(1.0, 1.8));
-            float storm      = 1.0 - smoothstep(0.04, 0.09, stormDist);
-            color = mix(color, vec3(0.75, 0.28, 0.18), storm * 0.7);
-        }
-
-        // Surface noise overlay (subtle)
-        float n = noise(coord * 5.0 + seed) * 0.12 + 0.88;
-        color *= n;
+        // Subtle color tint from body's base color for consistency
+        color = mix(color, color * vColor * 2.0, 0.15);
 
     } else {
-        // Rocky planets: surface noise + terrain variation
-        float n1 = noise(coord * 6.0 + seed)       * 0.5 + 0.5;
+        // --- Procedural: asteroids / KBOs ---
+        vec2 seed = fract(vWorldPos * 1e-11) * 100.0;
+        float n1 = noise(coord * 6.0 + seed)        * 0.5 + 0.5;
         float n2 = noise(coord * 12.0 + seed * 2.0) * 0.5 + 0.5;
         float terrain = n1 * 0.7 + n2 * 0.3;
-
-        // Slight color variation (darker lowlands, lighter highlands)
         color = mix(vColor * 0.78, vColor * 1.08, terrain);
     }
 
