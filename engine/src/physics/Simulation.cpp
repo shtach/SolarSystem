@@ -92,24 +92,46 @@ void Simulation::addMoonsToSimulation(size_t earth, size_t mars, size_t jupiter,
 
 void Simulation::addAsteroids(int count) {
     std::mt19937_64 rng(12345);
-    std::uniform_real_distribution<double> distRadius(3.0e11, 5.0e11);
+    std::uniform_real_distribution<double> distRadius(3.3e11, 4.8e11);
     std::uniform_real_distribution<double> distAngle(0.0, 6.283185307179586);
-    std::uniform_real_distribution<double> distSize(0.3, 1.0);
+    std::uniform_real_distribution<double> distSize(0.3, 1.2);
+    std::uniform_real_distribution<double> distEcc(-0.08, 0.08);
+    std::uniform_real_distribution<double> distType(0.0, 1.0);
 
     const double sunMass = m_bodies[0].getMass();
 
     for (int i = 0; i < count; ++i) {
-        double radius = distRadius(rng);
-        double angle  = distAngle(rng);
-        double vel    = std::sqrt(m_G * sunMass / radius) * (0.95 + (rng() % 100) / 1000.0);
+        double radius   = distRadius(rng);
+        double angle    = distAngle(rng);
+        double vel      = std::sqrt(m_G * sunMass / radius) * (1.0 + distEcc(rng));
+        double typeRoll = distType(rng);
+
+        float r{}, g{}, b{}, sz{};
+
+        if (typeRoll < 0.75) {
+            // C-type: dark carbonaceous (~75%)
+            float v = 0.13F + static_cast<float>(rng() % 100) / 800.0F;
+            r = v + 0.02F; g = v; b = v * 0.85F;
+            sz = static_cast<float>(distSize(rng)) * 0.8F;
+        } else if (typeRoll < 0.92) {
+            // S-type: stony, brownish-grey (~17%)
+            float base = 0.42F + static_cast<float>(rng() % 100) / 450.0F;
+            r = base + 0.12F; g = base * 0.82F; b = base * 0.62F;
+            sz = static_cast<float>(distSize(rng)) * 1.1F;
+        } else {
+            // M-type: metallic, brighter grey (~8%)
+            float v = 0.58F + static_cast<float>(rng() % 100) / 550.0F;
+            r = v; g = v * 0.96F; b = v * 0.90F;
+            sz = static_cast<float>(distSize(rng)) * 1.3F;
+        }
 
         Body asteroid(
             1e16 + static_cast<double>(rng() % 1000) * 1e13,
             Vec2(radius * std::cos(angle), radius * std::sin(angle)),
-            Vec2(-std::sin(angle) * vel, std::cos(angle) * vel),
-            static_cast<float>(distSize(rng))
+            Vec2(-std::sin(angle) * vel,    std::cos(angle) * vel),
+            sz
         );
-        asteroid.setColor(0.5F, 0.5F, 0.5F);
+        asteroid.setColor(r, g, b);
         m_bodies.push_back(asteroid);
     }
 }
