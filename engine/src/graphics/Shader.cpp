@@ -70,6 +70,11 @@ void Shader::setFloat(const std::string& name, float value) {
     glUniform1f(getUniformLocation(name), value);
 }
 
+void Shader::setInt(const std::string& name, int value) {
+    if (m_programId == 0) return;
+    glUniform1i(getUniformLocation(name), value);
+}
+
 void Shader::setVec2(const std::string& name, float x, float y) {
     glUniform2f(getUniformLocation(name), x, y);
 }
